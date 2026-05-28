@@ -464,7 +464,7 @@ export default function TenantManagement() {
       {/* MODAL: REGISTER NEW CLINIC */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm px-md">
-          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-xl shadow-xl w-full max-w-[500px] animate-slide-in">
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-xl shadow-xl w-full max-w-[500px]">
             <div className="flex justify-between items-center mb-md">
               <h3 className="font-bold text-lg text-on-surface flex items-center gap-sm">
                 <span className="material-symbols-outlined text-primary">add_business</span>
@@ -498,7 +498,7 @@ export default function TenantManagement() {
             <form onSubmit={handleCreateClinic} className="flex flex-col gap-md">
               
               {currentStep === 1 && (
-                <div className="flex flex-col gap-md animate-slide-in">
+                <div className="flex flex-col gap-md">
                   <div className="flex flex-col gap-xs">
                     <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">CNPJ (Busca Automática)</label>
                     <div className="flex gap-sm">
@@ -552,7 +552,7 @@ export default function TenantManagement() {
               )}
 
               {currentStep === 2 && (
-                <div className="flex flex-col gap-md animate-slide-in">
+                <div className="flex flex-col gap-md">
                   <div className="grid grid-cols-2 gap-md">
                     <div className="flex flex-col gap-xs">
                       <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider font-semibold">Plano</label>
@@ -600,7 +600,7 @@ export default function TenantManagement() {
               )}
 
               {currentStep === 3 && (
-                <div className="flex flex-col gap-md animate-slide-in">
+                <div className="flex flex-col gap-md">
                   <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md mb-xs flex items-center gap-md">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                       <span className="material-symbols-outlined">shield_person</span>
