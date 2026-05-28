@@ -2,7 +2,19 @@ import { NextResponse } from "next/server";
 import { createToken, ROLE_HOME } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase";
-import { rateLimit } from "@/lib/rate-limit";
+
+const rateMap = new Map<string, { count: number; resetAt: number }>();
+function rateLimit(ip: string, limit = 5, windowMs = 60000): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(ip, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (entry.count >= limit) return false;
+  entry.count++;
+  return true;
+}
 
 interface SeedUser {
   id: string;
@@ -92,6 +104,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: false, message: "E-mail ou senha incorretos." }, { status: 401 });
   } catch (err) {
-    return NextResponse.json({ success: false, message: "Erro interno no servidor." }, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Erro interno no servidor.";
+    return NextResponse.json({ success: false, message: msg }, { status: 500 });
   }
 }
