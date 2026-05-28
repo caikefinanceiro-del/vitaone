@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { createToken } from "@/lib/auth";
+import { createToken, ROLE_HOME } from "@/lib/auth";
 import { cookies } from "next/headers";
-import { ROLE_HOME } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { rateLimit } from "@/lib/rate-limit";
 
 interface SeedUser {
   id: string;
@@ -44,6 +44,11 @@ const USERS: SeedUser[] = [
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!rateLimit(ip, 5, 60000)) {
+      return NextResponse.json({ success: false, message: "Muitas tentativas. Tente novamente em 1 minuto." }, { status: 429 });
+    }
+
     const { email, password } = await request.json();
 
     // Fallback to hardcoded users first for better UX during dev

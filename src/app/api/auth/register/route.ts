@@ -2,9 +2,15 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { createToken, ROLE_HOME } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!rateLimit(ip, 3, 60000)) {
+      return NextResponse.json({ success: false, message: "Muitas tentativas. Tente novamente em 1 minuto." }, { status: 429 });
+    }
+
     const { email, password, nome, segmento } = await request.json();
 
     // Create user in Supabase Auth
