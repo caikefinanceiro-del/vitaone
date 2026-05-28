@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Fila de Espera" description="Monitor da recepção para gestão de fila de espera e triagem." modulePath="colaborador/reception/fila_de_espera_reception" />; }

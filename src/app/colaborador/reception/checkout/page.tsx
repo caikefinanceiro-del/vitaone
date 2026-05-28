@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Checkout" description="Fluxo de checkout seguro para cobrança de depósito." modulePath="colaborador/reception/patient_checkout_booking_deposit" />; }

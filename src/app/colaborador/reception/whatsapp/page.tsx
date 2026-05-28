@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Template WhatsApp" description="Preview de template de recibo via WhatsApp." modulePath="colaborador/reception/whatsapp_receipt_template_patient" />; }

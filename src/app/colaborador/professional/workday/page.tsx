@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Jornada Clínica" description="Hub da jornada de trabalho: agenda de procedimentos e pacientes do dia." modulePath="colaborador/professional/staff_clinical_workday_hub_level_3_1" />; }

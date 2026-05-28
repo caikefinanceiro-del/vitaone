@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Mapeamento Facial" description="Charting clínico com anotação em diagrama facial." modulePath="colaborador/professional/facial_mapping_clinical_charting_professional" />; }

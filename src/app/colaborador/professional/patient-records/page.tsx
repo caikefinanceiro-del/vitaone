@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Registros de Pacientes" description="Lista geral de registros clínicos, busca e filtragem." modulePath="colaborador/professional/patient_records_professional" />; }

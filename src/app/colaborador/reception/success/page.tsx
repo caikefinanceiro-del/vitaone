@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Pagamento Confirmado" description="Confirmação de pagamento com sucesso e notificação WhatsApp." modulePath="colaborador/reception/booking_confirmed_patient_success" />; }

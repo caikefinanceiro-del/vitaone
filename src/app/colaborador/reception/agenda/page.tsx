@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Agenda Dinâmica" description="Grade de horários multi-profissional com status de appointments." modulePath="colaborador/reception/dynamic_agenda_reception" />; }

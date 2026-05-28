@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Cadastro de Pacientes" description="Formulário de registro de novos pacientes." modulePath="colaborador/reception/patient_enrollment_reception" />; }

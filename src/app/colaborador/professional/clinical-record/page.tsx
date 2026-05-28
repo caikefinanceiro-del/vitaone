@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Prontuário & Prescrição" description="Registro de evolução clínica, prescrições e anotações." modulePath="colaborador/professional/clinical_record_prescription_professional" />; }

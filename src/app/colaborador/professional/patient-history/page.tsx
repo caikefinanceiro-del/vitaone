@@ -1,0 +1,1 @@
+import ModulePlaceholder from "@/components/ModulePlaceholder";export default function Page() { return <ModulePlaceholder title="Histórico do Paciente" description="Galeria before/after, linha do tempo de procedimentos." modulePath="colaborador/professional/patient_history_gallery_professional" />; }
