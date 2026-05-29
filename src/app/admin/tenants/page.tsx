@@ -44,6 +44,7 @@ export default function TenantManagement() {
   const [contractorEmail, setContractorEmail] = useState("");
   const [contractorPassword, setContractorPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Toast state
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -117,7 +118,7 @@ export default function TenantManagement() {
   };
 
   // Create Clinic
-  const handleCreateClinic = (e: React.FormEvent) => {
+  const handleCreateClinic = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentStep !== 3) return;
 
@@ -126,46 +127,76 @@ export default function TenantManagement() {
       return;
     }
 
-    // Calculate MRR based on plan and status
-    let mrrValue = "R$ 0,00";
-    if (clinicStatus === "Active") {
-      if (clinicPlan === "Essential") mrrValue = "R$ 450,00";
-      else if (clinicPlan === "Pro") mrrValue = "R$ 850,00";
-      else if (clinicPlan === "Premium") mrrValue = "R$ 1.250,00";
-    }
-
-    const today = new Date();
-    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const formattedDate = `${String(today.getDate()).padStart(2, "0")} ${months[today.getMonth()]} ${today.getFullYear()}`;
-
-    const newClinic: Tenant = {
-      id: Date.now(),
-      name: clinicName,
-      location: clinicLocation,
-      plan: clinicPlan,
-      status: clinicStatus,
-      joined: formattedDate,
-      mrr: mrrValue,
-      initial: clinicName.charAt(0).toUpperCase() || "C",
-    };
-
-    const updated = [newClinic, ...tenants];
-    saveTenants(updated);
-    setIsModalOpen(false);
-    
-    // Clear form
-    setClinicName("");
-    setClinicLocation("");
-    setClinicPlan("Essential");
-    setClinicStatus("Active");
-    setCnpj("");
-    setContractorName("");
-    setContractorEmail("");
-    setContractorPassword("");
-    setCurrentStep(1);
+    setIsSubmitting(true);
     setErrorMsg("");
 
-    showToast("Clínica cadastrada com sucesso!");
+    try {
+      const res = await fetch('/api/tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cnpj,
+          clinicName,
+          location: clinicLocation,
+          contractorName,
+          contractorEmail,
+          contractorPassword,
+          clinicPlan
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao cadastrar a clínica.");
+      }
+
+      // Calculate MRR based on plan and status for the UI mockup update
+      let mrrValue = "R$ 0,00";
+      if (clinicStatus === "Active") {
+        if (clinicPlan === "Essential") mrrValue = "R$ 450,00";
+        else if (clinicPlan === "Pro") mrrValue = "R$ 850,00";
+        else if (clinicPlan === "Premium") mrrValue = "R$ 1.250,00";
+      }
+
+      const today = new Date();
+      const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      const formattedDate = `${String(today.getDate()).padStart(2, "0")} ${months[today.getMonth()]} ${today.getFullYear()}`;
+
+      const newClinic: Tenant = {
+        id: Date.now(), // Temporarily use timestamp for local UI id
+        name: clinicName,
+        location: clinicLocation,
+        plan: clinicPlan,
+        status: clinicStatus,
+        joined: formattedDate,
+        mrr: mrrValue,
+        initial: clinicName.charAt(0).toUpperCase() || "C",
+      };
+
+      const updated = [newClinic, ...tenants];
+      saveTenants(updated);
+      setIsModalOpen(false);
+      
+      // Clear form
+      setClinicName("");
+      setClinicLocation("");
+      setClinicPlan("Essential");
+      setClinicStatus("Active");
+      setCnpj("");
+      setContractorName("");
+      setContractorEmail("");
+      setContractorPassword("");
+      setCurrentStep(1);
+      setErrorMsg("");
+
+      showToast("Clínica cadastrada e e-mail enviado com sucesso!");
+
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Toggle Suspend Status
@@ -344,7 +375,7 @@ export default function TenantManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredTenants.map((row) => (
+                filteredTenants.map((row, index) => (
                   <tr key={row.id} className="hover:bg-surface-container-low/20 transition-colors group">
                     <td className="py-md px-lg">
                       <div className="flex items-center gap-md">
@@ -399,7 +430,9 @@ export default function TenantManagement() {
                             className="fixed inset-0 z-[5]" 
                             onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }}
                           ></div>
-                          <div className="absolute right-8 top-10 w-48 bg-surface border border-outline-variant/30 rounded-xl shadow-xl z-10 py-xs animate-slide-in">
+                          <div className={`absolute right-16 w-48 bg-surface border border-outline-variant/30 rounded-xl shadow-xl z-10 py-xs animate-slide-in ${
+                            index >= filteredTenants.length - 2 && filteredTenants.length > 2 ? 'bottom-10 origin-bottom-right' : 'top-10 origin-top-right'
+                          }`}>
                           <button 
                             onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); handleOpenDetails(row); }}
                             className="w-full flex items-center gap-sm px-md py-sm text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
@@ -700,10 +733,15 @@ export default function TenantManagement() {
                   ) : (
                     <button 
                       type="submit"
-                      className="bg-primary text-white font-bold text-xs px-lg py-sm rounded-lg shadow-md hover:bg-primary/90 transition-colors flex items-center gap-xs cursor-pointer"
+                      disabled={isSubmitting}
+                      className={`font-bold text-xs px-lg py-sm rounded-lg shadow-md transition-colors flex items-center gap-xs ${isSubmitting ? 'bg-primary/70 text-white cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 cursor-pointer'}`}
                     >
-                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                      Concluir Cadastro
+                      {isSubmitting ? (
+                        <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                      ) : (
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      )}
+                      {isSubmitting ? "Processando..." : "Concluir Cadastro"}
                     </button>
                   )}
                 </div>

@@ -2,23 +2,20 @@
 
 import { useState } from "react";
 
-type ModuleAccess = boolean | "toggle";
-
 interface ModuleDef {
   id: number;
   name: string;
   icon: string;
-  globalActive: boolean;
-  essential: ModuleAccess;
-  pro: ModuleAccess;
-  premium: ModuleAccess;
+  essential: boolean;
+  pro: boolean;
+  premium: boolean;
 }
 
 const INITIAL_MODULES: ModuleDef[] = [
-  { id: 1, name: "WhatsApp Automation", icon: "forum", globalActive: true, essential: false, pro: "toggle", premium: true },
-  { id: 2, name: "Advanced Inventory", icon: "inventory_2", globalActive: true, essential: false, pro: "toggle", premium: true },
-  { id: 3, name: "Stripe Signal Integration", icon: "point_of_sale", globalActive: true, essential: true, pro: true, premium: true },
-  { id: 4, name: "AI Clinical Charting", icon: "clinical_notes", globalActive: true, essential: false, pro: false, premium: "toggle" },
+  { id: 1, name: "WhatsApp Automation", icon: "forum", essential: false, pro: true, premium: true },
+  { id: 2, name: "Advanced Inventory", icon: "inventory_2", essential: false, pro: true, premium: true },
+  { id: 3, name: "Stripe Signal Integration", icon: "point_of_sale", essential: true, pro: true, premium: true },
+  { id: 4, name: "AI Clinical Charting", icon: "clinical_notes", essential: false, pro: false, premium: true },
 ];
 
 export default function PlanFeatureFactory() {
@@ -32,12 +29,12 @@ export default function PlanFeatureFactory() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newModuleName, setNewModuleName] = useState("");
   const [newModuleIcon, setNewModuleIcon] = useState("api");
-  const [newEssential, setNewEssential] = useState<ModuleAccess>(false);
-  const [newPro, setNewPro] = useState<ModuleAccess>(false);
-  const [newPremium, setNewPremium] = useState<ModuleAccess>(true);
+  const [newEssential, setNewEssential] = useState<boolean>(false);
+  const [newPro, setNewPro] = useState<boolean>(false);
+  const [newPremium, setNewPremium] = useState<boolean>(true);
 
-  const handleToggleGlobal = (id: number) => {
-    setModules(prev => prev.map(m => m.id === id ? { ...m, globalActive: !m.globalActive } : m));
+  const handleToggleModule = (id: number, field: 'essential' | 'pro' | 'premium') => {
+    setModules(prev => prev.map(m => m.id === id ? { ...m, [field]: !m[field] } : m));
     setIsDirty(true);
   };
 
@@ -49,7 +46,6 @@ export default function PlanFeatureFactory() {
       id: Date.now(),
       name: newModuleName,
       icon: newModuleIcon,
-      globalActive: true,
       essential: newEssential,
       pro: newPro,
       premium: newPremium
@@ -177,7 +173,7 @@ export default function PlanFeatureFactory() {
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="bg-surface-container-low/10">
-                <th className="py-md px-lg font-bold text-[11px] text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 w-[40%]">Nome do Módulo / Manutenção</th>
+                <th className="py-md px-lg font-bold text-[11px] text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 w-[40%]">Nome do Módulo</th>
                 <th className="py-md px-lg font-bold text-[11px] text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/10 text-center">Essential</th>
                 <th className="py-md px-lg font-bold text-[11px] text-primary uppercase tracking-wider border-b border-outline-variant/10 text-center bg-primary/5">Pro</th>
                 <th className="py-md px-lg font-bold text-[11px] text-secondary uppercase tracking-wider border-b border-outline-variant/10 text-center bg-secondary/5">Premium</th>
@@ -185,32 +181,27 @@ export default function PlanFeatureFactory() {
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-sm">
               {modules.map((row) => (
-                <tr key={row.id} className={`transition-colors ${row.globalActive ? 'hover:bg-surface-container-low/10' : 'bg-surface-container-highest/20 opacity-60 grayscale'}`}>
+                <tr key={row.id} className="transition-colors hover:bg-surface-container-low/10">
                   <td className="py-md px-lg">
-                    <div className="flex items-center gap-md">
-                      <div className="flex flex-col items-center">
-                        <div 
-                          onClick={() => handleToggleGlobal(row.id)}
-                          className={`w-8 h-4 rounded-full relative p-0.5 transition-colors cursor-pointer inline-flex ${row.globalActive ? 'bg-primary' : 'bg-outline-variant'}`}
-                        >
-                          <div className={`w-3 h-3 bg-white rounded-full transition-all ${row.globalActive ? 'ml-4' : 'ml-0'}`}></div>
-                        </div>
-                        <span className="text-[9px] font-bold mt-1 text-on-surface-variant uppercase">{row.globalActive ? 'ON' : 'OFF'}</span>
-                      </div>
-                      <div className="flex items-center gap-sm">
-                        <span className="material-symbols-outlined text-on-surface-variant text-[20px]">{row.icon}</span>
-                        <span className="font-bold text-on-surface">{row.name}</span>
-                      </div>
+                    <div className="flex items-center gap-sm">
+                      <span className="material-symbols-outlined text-on-surface-variant text-[20px]">{row.icon}</span>
+                      <span className="font-bold text-on-surface">{row.name}</span>
                     </div>
                   </td>
                   <td className="py-md px-lg text-center">
-                    {row.essential === true ? <Check /> : row.essential === false ? <Minus /> : <Toggle checked={false} color="primary" />}
+                    <div onClick={() => handleToggleModule(row.id, 'essential')}>
+                      <Toggle checked={row.essential} color="primary" />
+                    </div>
                   </td>
                   <td className="py-md px-lg text-center bg-primary/5">
-                    {row.pro === true ? <Check color="primary" /> : row.pro === false ? <Minus /> : <Toggle checked={true} color="primary" />}
+                    <div onClick={() => handleToggleModule(row.id, 'pro')}>
+                      <Toggle checked={row.pro} color="primary" />
+                    </div>
                   </td>
                   <td className="py-md px-lg text-center bg-secondary/5">
-                    {row.premium === true ? <Check color="secondary" /> : row.premium === false ? <Minus /> : <Toggle checked={true} color="secondary" />}
+                    <div onClick={() => handleToggleModule(row.id, 'premium')}>
+                      <Toggle checked={row.premium} color="secondary" />
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -335,38 +326,26 @@ export default function PlanFeatureFactory() {
   );
 }
 
-function AccessSelector({ label, value, onChange, color = 'primary' }: { label: string, value: ModuleAccess, onChange: (v: ModuleAccess) => void, color?: string }) {
+function AccessSelector({ label, value, onChange, color = 'primary' }: { label: string, value: boolean, onChange: (v: boolean) => void, color?: string }) {
   return (
     <div className="flex flex-col gap-xs">
       <label className={`text-[10px] font-bold uppercase tracking-wider text-center ${color === 'primary' ? 'text-primary' : color === 'secondary' ? 'text-secondary' : 'text-on-surface-variant'}`}>{label}</label>
       <select 
         value={value.toString()} 
-        onChange={(e) => {
-          const val = e.target.value;
-          onChange(val === "true" ? true : val === "false" ? false : "toggle");
-        }}
+        onChange={(e) => onChange(e.target.value === "true")}
         className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-2 py-1.5 text-xs text-center outline-none cursor-pointer"
       >
-        <option value="true">Incluído</option>
-        <option value="false">Bloqueado</option>
-        <option value="toggle">Opcional</option>
+        <option value="true">Incluído (ON)</option>
+        <option value="false">Bloqueado (OFF)</option>
       </select>
     </div>
   );
 }
 
-function Check({ color = 'primary' }: { color?: 'primary' | 'secondary' }) {
-  return <span className={`material-symbols-outlined text-[20px] ${color === 'primary' ? 'text-primary' : 'text-secondary'}`} style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
-}
-
-function Minus() {
-  return <span className="material-symbols-outlined text-outline-variant text-[20px]">remove</span>;
-}
-
 function Toggle({ checked, color = 'primary' }: { checked: boolean, color?: 'primary' | 'secondary' }) {
   return (
     <div className={`w-9 h-5 rounded-full relative p-0.5 transition-colors cursor-pointer inline-flex mx-auto ${checked ? (color === 'primary' ? 'bg-primary' : 'bg-secondary') : 'bg-outline-variant'}`}>
-      <div className={`w-4 h-4 bg-white rounded-full transition-all ${checked ? 'ml-4' : 'ml-0'}`}></div>
+      <div className={`w-4 h-4 bg-white rounded-full transition-all shadow-sm ${checked ? 'ml-4' : 'ml-0'}`}></div>
     </div>
   );
 }

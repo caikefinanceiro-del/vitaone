@@ -1,6 +1,78 @@
 "use client";
 
+import { useState } from "react";
+import * as XLSX from "xlsx";
+
 export default function AdminMasterDashboard() {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = () => {
+    setIsExporting(true);
+
+    try {
+      // 1. Aba Resumo Executivo
+      const resumoData = [
+        { Metrica: "Monthly Recurring Revenue (MRR)", Valor: "$1,240,000", Crescimento: "+12.4%" },
+        { Metrica: "Clinic Churn Rate", Valor: "0.8%", Crescimento: "-0.2%" },
+        { Metrica: "Active Clinics", Valor: "842", Crescimento: "+42 nessa semana" },
+        { Metrica: "Stripe Volume", Valor: "$4,200,000", Crescimento: "-" },
+        { Metrica: "WhatsApp Msgs", Valor: "1,200,000", Crescimento: "-" },
+      ];
+      const sheetResumo = XLSX.utils.json_to_sheet(resumoData);
+      sheetResumo["!cols"] = [{ wch: 35 }, { wch: 15 }, { wch: 20 }];
+
+      // 2. Aba Clínicas Ativas (Tenants)
+      const clinicasData = [
+        { ID: "t_aesthetics_lux", Nome: "Aesthetics Beverly Hills", Plano: "Premium", Regiao: "US-West", Status: "Ativa", DataCadastro: "2025-10-01" },
+        { ID: "t_dental_care", Nome: "Dental Care Co.", Plano: "Standard", Regiao: "US-East", Status: "Ativa", DataCadastro: "2025-11-15" },
+        { ID: "t_derma_clinic", Nome: "Derma Clinic", Plano: "Premium", Regiao: "EU-Central", Status: "Bloqueada", DataCadastro: "2025-12-05" },
+        { ID: "t_vet_health", Nome: "Vet Health & Spa", Plano: "Basic", Regiao: "BR-South", Status: "Ativa", DataCadastro: "2026-01-20" },
+        { ID: "t_physio_pro", Nome: "Physio Pro Center", Plano: "Premium", Regiao: "US-East", Status: "Ativa", DataCadastro: "2026-02-10" },
+      ];
+      const sheetClinicas = XLSX.utils.json_to_sheet(clinicasData);
+      sheetClinicas["!cols"] = [{ wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }];
+
+      // 3. Aba Faturamento Stripe
+      const stripeData = [
+        { TransacaoID: "pi_3OQ...", Clinica: "Aesthetics Beverly Hills", Valor: "$1,250.00", Status: "Succeeded", Data: "2026-05-28 14:30:00" },
+        { TransacaoID: "pi_3OR...", Clinica: "Dental Care Co.", Valor: "$450.00", Status: "Succeeded", Data: "2026-05-28 13:15:00" },
+        { TransacaoID: "pi_3OS...", Clinica: "Derma Clinic", Valor: "$1,250.00", Status: "Failed (Insufficient Funds)", Data: "2026-05-28 11:00:00" },
+        { TransacaoID: "pi_3OT...", Clinica: "Vet Health & Spa", Valor: "$150.00", Status: "Succeeded", Data: "2026-05-28 09:45:00" },
+      ];
+      const sheetStripe = XLSX.utils.json_to_sheet(stripeData);
+      sheetStripe["!cols"] = [{ wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 25 }, { wch: 25 }];
+
+      // 4. Aba Consumo Twilio
+      const twilioData = [
+        { Clinica: "Aesthetics Beverly Hills", Tipo: "WhatsApp Template", Quantidade: 45020, Custo: "$450.20", Periodo: "Maio 2026" },
+        { Clinica: "Dental Care Co.", Tipo: "WhatsApp Session", Quantidade: 12050, Custo: "$120.50", Periodo: "Maio 2026" },
+        { Clinica: "Vet Health & Spa", Tipo: "SMS", Quantidade: 500, Custo: "$15.00", Periodo: "Maio 2026" },
+        { Clinica: "Physio Pro Center", Tipo: "WhatsApp Template", Quantidade: 32000, Custo: "$320.00", Periodo: "Maio 2026" },
+      ];
+      const sheetTwilio = XLSX.utils.json_to_sheet(twilioData);
+      sheetTwilio["!cols"] = [{ wch: 30 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
+
+      // Criar a pasta de trabalho (Workbook) e anexar as 4 planilhas
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheetResumo, "Resumo_Executivo");
+      XLSX.utils.book_append_sheet(workbook, sheetClinicas, "Clinicas_Ativas");
+      XLSX.utils.book_append_sheet(workbook, sheetStripe, "Faturamento_Stripe");
+      XLSX.utils.book_append_sheet(workbook, sheetTwilio, "Consumo_Twilio");
+
+      // Gerar e baixar o arquivo .xlsx
+      const dataAtual = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(workbook, "VitaOne_Dashboard_Relatorio_" + dataAtual + ".xlsx");
+      
+    } catch (error) {
+      console.error("Erro ao exportar planilha:", error);
+    } finally {
+      // Simular um pequeno tempo de carregamento para UX
+      setTimeout(() => {
+        setIsExporting(false);
+      }, 500);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-xl">
       <div className="flex items-center justify-between">
@@ -8,9 +80,15 @@ export default function AdminMasterDashboard() {
           <h2 className="font-headline-lg text-headline-lg text-on-surface">Overview</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Métricas mestre e saúde do sistema para VitaOne.</p>
         </div>
-        <button className="flex items-center gap-sm px-md py-sm border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors shadow-sm">
-          <span className="material-symbols-outlined text-[18px]">download</span>
-          Exportar Relatório
+        <button 
+          onClick={handleExport}
+          disabled={isExporting}
+          className="flex items-center gap-sm px-md py-sm border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span className={`material-symbols-outlined text-[18px] ${isExporting ? 'animate-spin' : ''}`}>
+            {isExporting ? 'sync' : 'download'}
+          </span>
+          {isExporting ? 'Gerando...' : 'Exportar Relatório'}
         </button>
       </div>
 

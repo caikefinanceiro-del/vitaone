@@ -1,7 +1,9 @@
-import { Pinecone } from "@pinecone-database/pinecone";
+import { Pinecone } from '@pinecone-database/pinecone';
 
-const apiKey = process.env.PINECONE_API_KEY!;
+if (!process.env.PINECONE_API_KEY) {
+  throw new Error('PINECONE_API_KEY is missing in environment variables');
+}
 
-export const pinecone = new Pinecone({ apiKey });
-
-export const INDEX_NAME = "vitaone";
+export const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY,
+});
